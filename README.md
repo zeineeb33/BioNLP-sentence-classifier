@@ -1,11 +1,11 @@
 # Sentence Classification of PubMed 200k RCT Dataset
 
-## 📌 Description
+##  Description
 Ce projet a pour objectif de développer un modèle de classification de phrases issues d’articles de recherche biomédicale.  
 L’enjeu est d’assigner chaque phrase à sa section correspondante (Objectif, Méthodes, Résultats, Conclusions, Contexte).  
 Cela permet d’automatiser la structuration d’articles scientifiques et d’améliorer la recherche d’information dans la littérature biomédicale.
 
-## 📊 Dataset
+##  Dataset
 - **Nom :** PubMed 200k RCT
 - **Composition :**
   - 180 040 phrases pour l’entraînement
@@ -18,7 +18,7 @@ Cela permet d’automatiser la structuration d’articles scientifiques et d’a
   - `RESULTS`
   - `CONCLUSIONS`
 
-## ⚙️ Méthodologie
+## ⚙ Méthodologie
 1. **Prétraitement :**
    - Tokenisation et nettoyage
    - Représentation vectorielle avec :
@@ -34,17 +34,17 @@ Cela permet d’automatiser la structuration d’articles scientifiques et d’a
 3. **Optimisation :**
    - GridSearchCV pour les hyperparamètres (`alpha` pour Naïve Bayes, `C` pour Logistic Regression)
 
-## 📈 Résultats
+##  Résultats
 - **Meilleur modèle :** Logistic Regression + BioWordVec  
 - **Observations :**
   - Naïve Bayes limité par son hypothèse d’indépendance des mots.
   - Les embeddings biomédicaux (BioWordVec) capturent la sémantique et améliorent significativement la performance.
 
-## ✅ Conclusion
+##  Conclusion
 Les représentations vectorielles spécialisées (BioWordVec) surpassent largement les méthodes classiques de type Bag-of-Words pour la classification de phrases biomédicales.  
 Ce projet montre l’importance d’utiliser des embeddings adaptés au domaine dans les tâches de NLP.
 
-## 🛠️ Outils
+##  Outils
 - Python (scikit-learn, numpy, pandas)
 - BioWordVec
 - Matplotlib / Seaborn pour la visualisation
