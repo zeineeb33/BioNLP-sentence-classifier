@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run pytest --cov --cov-report=term
+
+  docker:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image (downloads data and trains the model)
+        run: docker build -t bionlp-sentence-classifier .
+      - name: Smoke test
+        run: |
+          docker run -d --name app -e PORT=10000 -p 10000:10000 bionlp-sentence-classifier
+          for i in $(seq 1 30); do curl -sf localhost:10000/health && break; sleep 2; done
+          curl -sf -X POST localhost:10000/v1/structure -H 'Content-Type: application/json' \
+            -d '{"text": "Asthma is common. We randomized 40 adults to drug X or placebo. Symptoms improved (p < 0.05)."}'
+          docker logs app
