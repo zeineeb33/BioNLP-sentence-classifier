@@ -20,11 +20,6 @@ dependencies = [
 [project.scripts]
 bionlp = "bionlp.cli:app"
 
-[project.optional-dependencies]
-llm = [
-    "anthropic>=1.17.0",
-]
-
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"

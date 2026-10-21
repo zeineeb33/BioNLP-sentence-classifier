@@ -147,7 +147,7 @@ notebooks/, docs/  original university notebook and report
 Not implemented yet:
 - Fine-tune a small biomedical transformer (e.g. PubMedBERT) on GPU and compare it with the
   linear model; distil or export to ONNX if it must fit the free tier.
-- Zero-shot LLM baseline (e.g. Claude Haiku through the Anthropic API) on a test sample, comparing
+- Zero-shot LLM baseline (a hosted LLM API) on a test sample, comparing
   accuracy, latency and cost per abstract with the classical model.
 - Sequence decoding (CRF / label transitions) over sentence probabilities.
 
