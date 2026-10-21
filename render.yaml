@@ -1,0 +1,12 @@
+# Render Blueprint: Dashboard -> New -> Blueprint -> select this repository.
+services:
+  - type: web
+    name: bionlp-abstract-structurer
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: BIONLP_LOG_LEVEL
+        value: INFO
