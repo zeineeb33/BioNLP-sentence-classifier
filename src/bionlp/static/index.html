@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Abstract Structurer</title>
+  <meta name="description" content="Label every sentence of a biomedical abstract as Background, Objective, Methods, Results or Conclusions.">
+  <style>
+    :root {
+      --bg: #f7f7f5; --surface: #ffffff; --text: #1d1d1f; --muted: #5f6368; --border: #e2e2de;
+      --accent: #1f5fbf; --accent-text: #ffffff;
+      --BACKGROUND: #6b7280; --OBJECTIVE: #7c3aed; --METHODS: #2563eb; --RESULTS: #047857; --CONCLUSIONS: #b45309;
+      --tint: 14%;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #131316; --surface: #1c1c21; --text: #ececf1; --muted: #a1a1aa; --border: #2e2e35;
+        --accent: #5b9bff; --accent-text: #0b1220;
+        --BACKGROUND: #a1a1aa; --OBJECTIVE: #a78bfa; --METHODS: #60a5fa; --RESULTS: #34d399; --CONCLUSIONS: #fbbf24;
+        --tint: 22%;
+      }
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--bg); color: var(--text);
+      font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+    main { max-width: 880px; margin: 0 auto; padding: 32px 16px 48px; }
+    h1 { font-size: 1.6rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+    .lead { color: var(--muted); margin: 0 0 24px; }
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 16px; }
+    textarea { width: 100%; min-height: 180px; resize: vertical; border: 1px solid var(--border); border-radius: 8px;
+      padding: 12px; font: inherit; background: var(--bg); color: var(--text); }
+    textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    button { font: inherit; border-radius: 8px; padding: 8px 16px; cursor: pointer; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text); }
+    button.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+    button:disabled { opacity: .6; cursor: progress; }
+    .status { color: var(--muted); font-size: .9rem; margin-left: auto; }
+    .error { color: #c62828; }
+    .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: .85rem; margin-bottom: 12px; }
+    .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 3px;
+      margin-right: 6px; background: var(--c); vertical-align: baseline; }
+    .s { background: color-mix(in srgb, var(--c) var(--tint), transparent); border-bottom: 2px solid var(--c);
+      border-radius: 3px; padding: 1px 2px; cursor: help; }
+    .s.low { border-bottom-style: dashed; }
+    .section { border-left: 4px solid var(--c); padding: 4px 0 4px 12px; margin: 12px 0; }
+    .section h3 { margin: 0 0 2px; font-size: .78rem; letter-spacing: .06em; color: var(--c); }
+    .section p { margin: 0; }
+    h2 { font-size: 1rem; margin: 0 0 12px; }
+    details summary { cursor: pointer; color: var(--muted); }
+    pre { overflow-x: auto; font-size: .8rem; background: var(--bg); padding: 12px; border-radius: 8px; }
+    footer { color: var(--muted); font-size: .85rem; margin-top: 24px; }
+    footer a { color: var(--accent); }
+    [hidden] { display: none !important; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Abstract Structurer</h1>
+  <p class="lead">Paste a raw biomedical abstract. Each sentence gets labelled as Background, Objective,
+    Methods, Results or Conclusions by a model trained on PubMed 20k RCT.</p>
+
+  <div class="card">
+    <label for="text" hidden>Abstract</label>
+    <textarea id="text" placeholder="Paste an abstract here..."></textarea>
+    <div class="row">
+      <button class="primary" id="go">Structure abstract</button>
+      <button id="example">Load example</button>
+      <span class="status" id="status" role="status"></span>
+    </div>
+  </div>
+
+  <div id="results" hidden>
+    <div class="card">
+      <h2>Labelled sentences</h2>
+      <div class="legend" id="legend"></div>
+      <p id="highlighted"></p>
+    </div>
+    <div class="card">
+      <h2>Structured abstract</h2>
+      <div id="sections"></div>
+    </div>
+    <div class="card">
+      <details><summary>JSON response</summary><pre id="json"></pre></details>
+    </div>
+  </div>
+
+  <footer>
+    <span id="model">Loading model info...</span> ·
+    <a href="/docs">API docs</a> ·
+    <a href="https://github.com/zeineeb33/BioNLP-sentence-classifier">Source</a>
+  </footer>
+</main>
+<script>
+  const LABELS = ["BACKGROUND", "OBJECTIVE", "METHODS", "RESULTS", "CONCLUSIONS"];
+  const EXAMPLE = "Emotional eating is associated with overeating and the development of obesity. " +
+    "Yet, empirical evidence for individual differences in emotional eating remains equivocal. " +
+    "The aim of this study was to test if attention bias for food moderates the effect of self-reported " +
+    "emotional eating during sad mood on actual food intake. Participants (N = 85) were randomly assigned " +
+    "to one of two experimental mood induction conditions (sad/neutral). Attentional processing of food " +
+    "was measured with an eye-tracking paradigm and food intake was assessed after the mood induction. " +
+    "Emotional eating predicted higher food intake after the sad mood induction (p < 0.05), but only in " +
+    "participants with a strong attention bias for food. Attention bias for food may explain why some " +
+    "individuals overeat when they feel sad, and could be a target for interventions.";
+  const $ = (id) => document.getElementById(id);
+  const color = (label) => `var(--${label})`;
+
+  $("legend").innerHTML = LABELS.map(l => `<span style="--c:${color(l)}">${l[0] + l.slice(1).toLowerCase()}</span>`).join("");
+  $("example").onclick = () => { $("text").value = EXAMPLE; $("text").focus(); };
+  $("go").onclick = run;
+  $("text").addEventListener("keydown", e => { if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) run(); });
+
+  function el(tag, attrs, text) {
+    const node = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => k === "style" ? node.style.setProperty("--c", v) : node.setAttribute(k, v));
+    if (text !== undefined) node.textContent = text;
+    return node;
+  }
+
+  async function run() {
+    const text = $("text").value.trim();
+    if (!text) { $("status").textContent = "Paste an abstract first."; return; }
+    $("go").disabled = true; $("status").className = "status"; $("status").textContent = "Labelling...";
+    const t0 = performance.now();
+    try {
+      const res = await fetch("/v1/structure", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail));
+      render(data);
+      $("status").textContent = `${data.sentences.length} sentences in ${Math.round(performance.now() - t0)} ms`;
+    } catch (err) {
+      $("status").className = "status error"; $("status").textContent = `Error: ${err.message}`;
+    } finally { $("go").disabled = false; }
+  }
+
+  function render(data) {
+    const hl = $("highlighted"); hl.replaceChildren();
+    data.sentences.forEach(s => {
+      const pct = Math.round(s.confidence * 100);
+      const span = el("span", { class: "s" + (s.confidence < 0.6 ? " low" : ""), style: color(s.label),
+        title: `${s.label} (${pct}% confidence)` }, s.text);
+      hl.append(span, " ");
+    });
+    const sec = $("sections"); sec.replaceChildren();
+    data.sections.forEach(s => {
+      const div = el("div", { class: "section", style: color(s.label) });
+      div.append(el("h3", {}, s.label), el("p", {}, s.text));
+      sec.append(div);
+    });
+    $("json").textContent = JSON.stringify(data, null, 2);
+    $("results").hidden = false;
+  }
+
+  fetch("/v1/model").then(r => r.json()).then(m => {
+    const acc = m.test_accuracy ? ` · test accuracy ${(m.test_accuracy * 100).toFixed(1)}%` : "";
+    $("model").textContent = `Model: ${m.name}${acc}`;
+  }).catch(() => { $("model").textContent = "Model info unavailable"; });
+</script>
+</body>
+</html>
