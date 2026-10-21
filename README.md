@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/zeineeb33/BioNLP-sentence-classifier/actions/workflows/ci.yml/badge.svg)](https://github.com/zeineeb33/BioNLP-sentence-classifier/actions/workflows/ci.yml)
 
+**Live demo:** https://bionlp-abstract-structurer.onrender.com (free Render instance: the first request after a period of inactivity can take up to a minute while it wakes up) · [API docs](https://bionlp-abstract-structurer.onrender.com/docs)
+
 Paste a raw biomedical abstract and get it back structured: every sentence is labelled
 **BACKGROUND / OBJECTIVE / METHODS / RESULTS / CONCLUSIONS** and returned as JSON, with a
 color-coded web view. The model is trained on [PubMed 20k RCT](https://github.com/Franck-Dernoncourt/pubmed-rct)
