@@ -1,0 +1,27 @@
+# Data, models and generated artifacts (reproducible via `bionlp download` / `bionlp train`)
+data/
+models/
+artifacts/
+mlruns/
+*.joblib
+*.part
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+build/
+dist/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Env / editors
+.env
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.DS_Store
